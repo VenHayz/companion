@@ -2,7 +2,7 @@
 # in bot files, this file is known as cfg ("import settings as cfg")
 
 ### SETTINGS YOU SHOULD ALTER ###
-login = ['lukemister777@mail.com', 'DiScOrD!@#$(4545?>)']
+login = ['', '']
 prefix = ';' # Examples: / or ! etc.
 
 BOT_DEBUG = True # disable for performance; enable for bot logging
