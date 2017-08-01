@@ -10,15 +10,22 @@ import asyncio.coroutines
 
 # temporary settings (e.g. when random colors are enabled, it's not persistent)
 use_random_colors = False
+use_auto_embeds = False # this is set in "commands.py" but used in "bot.py"
 colors_backup = cfg.colors # used for resetting user colors
 py_environment = None
 
-### INFO ###
-# you always need to pass an argument, 'bot', if you need to send messages
+### UTILS ###
+def _embed(title, message, color):
+    """
+    A wrapper to discord.Embed to make embed code shorter and simpler.
+    """
+    if title == '':
+        return discord.Embed(description=message, colour=color)
+    return discord.Embed(title=title, description=message, colour=color)
 
 ### COMMANDS ###
-async def _help(bot, message, arg=None): #'_help' bc 'help' is already a python command
-    em = discord.Embed(title='Help',description='Check the terminal.',colour=cfg.colors.get('white'))
+async def _help(bot, message, arg=None): # '_help' bc 'help' is already a python command
+    em = _embed('Help', 'Check the terminal.', cfg.colors.get('white'))
     await bot.send_message(message.channel, embed=em)
     if arg == None: # no specific command help
         print('### HELP ###')
@@ -26,72 +33,73 @@ async def _help(bot, message, arg=None): #'_help' bc 'help' is already a python 
             print('%s%s\t(%s)'%(cfg.prefix, line, cfg.help_message.get(line)))
         print('### HELP ###')
     else:
-        em = discord.Embed(title='Error',description='Unknown command to request help for.',colour=cfg.colors.get('red'))
+        em = _embed('Error','Unknown command to request help for.',cfg.colors.get('red'))
         await bot.send_message(message.channel, embed=em)
 
 async def about(bot, message): # request about info
-    em = discord.Embed(title='About',description=cfg.about_message,colour=cfg.colors.get('white'))
+    em = _embed('About',cfg.about_message,cfg.colors.get('white'))
     await bot.send_message(message.channel, embed=em)
 
 ### COMMANDS / EMBED ###
 async def embed(bot, message, marg): # embed a message
     if use_random_colors is True:
         new_random_color = int('0x%06x' % random.randint(0, 0xFFFFFF), 16)
-        em = discord.Embed(description=marg, colour=new_random_color)
+        em = _embed('', marg, new_random_color)
         await bot.send_message(message.channel, embed=em)
         return
     else:
-        em = discord.Embed(description=marg, colour=cfg.embed_color)
+        em = _embed('', marg, cfg.embed_color)
         await bot.send_message(message.channel, embed=em)
         return
 
 async def embedsetcolor(bot, message, carg): # set embed color
     global use_random_colors
+    global use_auto_embeds
     if len(carg) > 1:
         if carg[0] == '-n': # new color
             # ;ec -n purple 0x9900FF
             if not len(carg) == 3: # incorrect syntax
-                em = discord.Embed(title='Error',description='Incorrect syntax.',colour=cfg.colors.get('red'))
+                em = _embed('Error', 'Incorrect syntax.', cfg.colors.get('red'))
                 await bot.send_message(message.channel, embed=em)
                 return
             new_color_name = carg[1] # purple
             new_color_hex = int(str(carg[2]).lower(), 0) # 0x9900FF
             try: # success
                 cfg.colors.update({new_color_name: new_color_hex})
-                em = discord.Embed(title='Success',description='Assigned color \"%s\" to %s.'%(new_color_name, hex(new_color_hex)), colour=new_color_hex)
+                em = _embed('Success', 'Assigned color \"%s\" to %s.'%(new_color_name, hex(new_color_hex)), new_color_hex)
                 await bot.send_message(message.channel, embed=em)
                 return
             except:
-                em = discord.Embed(title='Error',description='Could not update color \"%s\" to %s.\n\nUsage `ec -n <new color name> <new color hex>`\nExample: `ec -n purple 0x9900FF`' %(new_color_name, new_color_hex), colour=cfg.colors.get('red'))
+                em = _embed('Error', 'Could not update color \"%s\" to %s.\n\nUsage `ec -n <new color name> <new color hex>`\nExample: `ec -n purple 0x9900FF`'%(new_color_name, new_color_hex), cfg.colors.get('red'))
                 await bot.send_message(message.channel, embed=em)
                 return
     if carg[0] == '-r': # reset colors
         # ;ec -r
         if not len(carg) == 1:
-            em = discord.Embed(title='Error',description='Incorrect syntax.\n\nUsage: `ec -r`')
+            em = _embed('Error', 'Incorrect syntax.\n\nUsage: `ec -r`', cfg.colors.get('red'))
             await bot.send_message(message.channel, embed=em)
             return
         try:
             cfg.colors = colors_backup
-            em = discord.Embed(title='Success',description='Reset colors to default.',colour=cfg.colors.get('green'))
+            em = _embed('Success', 'Reset colors to default.', cfg.colors.get('green'))
             await bot.send_message(message.channel, embed=em)
             return
         except:
-            em = discord.Embed(title='Error',description='Incorrect syntax.\n\nUsage: `ec -r`')
+            em = _embed('Error', 'Incorrect syntax.\n\nUsage: `ec -r`', cfg.colors.get('red'))
             await bot.send_message(message.channel, embed=em)
             return
     if carg[0] == 'random': # random colors
         use_random_colors = True
-        em = discord.Embed(title='Success',description='Enabled random embed colors.',colour=cfg.colors.get('green'))
+        em = _embed('Success', 'Enabled random embed colors.', cfg.colors.get('green'))
         await bot.send_message(message.channel, embed=em)
         return
     color = carg[0]
     try:
         cfg.embed_color = cfg.colors.get(color)
-        em = discord.Embed(title='Success',description='Assigned embed color to %s'%(hex(cfg.embed_color)),colour=cfg.embed_color)
+        em = _embed('Success', 'Assigned embed color to %s'%(hex(cfg.embed_color)), cfg.embed_color)
         await bot.send_message(message.channel, embed=em)
     except:
-        em = discord.Embed(title='Error',description='Could not find color \"%s\".\n\n`help ec` will list available colors.' %(color), colour=cfg.colors.get('red'))
+        em = _embed('Error', 'Could not find color \"%s\".\n\n`help ec` will list available colors.'%(color), cfg.colors.get('red'))
         await bot.send_message(message.channel, embed=em)
         pass
     use_random_colors = False # keep from printing random colors if using specific colors
@@ -107,11 +115,11 @@ async def executeshell(bot, message, marg):
             print('[!]Attempting shell command \"%s\":\n |-Message: \"%s\"\n |-Return code: %d.'%(marg, lines, returnCode))
     except:
         try:
-            em = discord.Embed(title=marg, description=str(lines).strip(), colour=cfg.colors.get('red'))
+            em = _embed(marg, str(lines).strip(), cfg.colors.get('red'))
             await bot.send_message(message.channel, embed=em)
             return
         except:
-            em = discord.Embed(title=marg, description='Could not obtain command output. Possibly too long to send over Discord. Attempting to display in terminal instead.', colour=cfg.colors.get('red'))
+            em = _embed(marg, 'Could not obtain command output. Possibly too long to send over Discord. Attempting to display in terminal instead.', cfg.colors.get('red'))
             await bot.send_message(message.channel, embed=em)
             return
     msg = ''
@@ -121,24 +129,25 @@ async def executeshell(bot, message, marg):
     em = None
     try:
         if returnCode == 1:
-            em = discord.Embed(title=marg, description='%s\nReturned: %d'%(msg, returnCode), colour=cfg.colors.get('red'))
+            em = _embed(marg, '%s\nReturned: %d'%(msg, returnCode), cfg.colors.get('red'))
         elif returnCode == 0:
-            em = discord.Embed(title=marg, description='%s\nReturned: %d'%(msg, returnCode), colour=cfg.colors.get('green'))
+            em = _embed(marg, '%s\nReturned: %d'%(msg, returnCode), cfg.colors.get('green'))
         else:
-            em = discord.Embed(title=marg, description='%s\nReturned: %d'%(msg, returnCode), colour=cfg.colors.get('yellow'))
+            em = _embed(marg, '%s\nReturned: %d'%(msg, returnCode), cfg.colors.get('yellow'))
         child.kill() # lovestokillchildren.jpeg
         await bot.send_message(message.channel, embed=em)
     except:
-        em = discord.Embed(title=marg, description='Could not obtain command output. Possibly too long to send over Discord. Attempting to display in terminal instead.', colour=cfg.colors.get('red'))
+        em = _embed(marg, 'Could not obtain command output. Possibly too long to send over Discord. Attempting to display in terminal instead.', cfg.colors.get('red'))
         await bot.send_message(message.channel, embed=em)
         return
 
 async def doeval(bot, message, marg):
+    global py_environment
     py_environment = sub.Popen('python', stdout=sub.PIPE, stdin=sub.PIPE, stderr=sub.PIPE) # create env
     result = py_environment.communicate(input='print(\'test\')')[0]
     print(result)
 
-    em = discord.Embed(title='Eval', description=result, colour=cfg.colors.get('blue'))
+    em = _embed('Eval', result, cfg.colors.get('blue'))
     await bot.send_message(message.channel, embed=em)
 
     py_environment.kill()
@@ -147,7 +156,7 @@ async def doeval(bot, message, marg):
 async def ping(bot, message, carg=None):
     async def error():
         msg = 'Usage: `ping [hostname [number of pings]]`'
-        em = discord.Embed(title='Error', description=msg, colour=cfg.colors.get('red'))
+        em = _embed('Error', msg, cfg.colors.get('red'))
         await bot.send_message(message.channel, embed=em)
         return
     host = cfg.default_ping_hostname
@@ -176,12 +185,12 @@ async def ping(bot, message, carg=None):
         result = ping.readlines()
         result = result[-1].strip()
         result = result[0:len(result)-1] # remove trailing comma
-        em = discord.Embed(title='Ping', description='%s\n%s'%(host,result), colour=cfg.colors.get('white'))
+        em = _embed('Ping', '%s\n%s'%(host,result), cfg.colors.get('white'))
         await bot.send_message(message.channel, embed=em)
     else: # verbose
         msg = ''
         result = ping.readlines()
         for line in result:
             msg += '%s\n'%(str(line).strip())
-        em = discord.Embed(title='Ping Verbose', description='%s\n%s'%(host,msg), colour=cfg.colors.get('white'))
+        em = _embed('Ping Verbose', '%s\n%s'%(host,msg), cfg.colors.get('white'))
         await bot.send_message(message.channel, embed=em)

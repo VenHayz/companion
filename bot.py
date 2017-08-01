@@ -30,7 +30,7 @@ async def on_ready():
 async def on_message(message):
     if message.author == bot.user:
         if message.content.startswith(cfg.prefix):
-            # let's say we had a command: ping -v www.google.com
+            # let's say we had a command: ;ping -v www.google.com
             call = message.content[1::1].split()[0] # command name                  ("ping")
             carg = message.content[1::1].split()[1::1] # seperate arguments         ("-v", "www.google.com")
             marg = message.content[len(call)+2::1] # arguments as whole message     ("-v www.google.com")
@@ -57,6 +57,10 @@ async def on_message(message):
                 await commands.executeshell(bot, message, marg)
             elif call == 'eval' or call == 'ev':
                 await commands.doeval(bot, message, marg)
+
+            else: # we don't know what they mean in their command
+                pass # TODO: add usage
+            return
 ### START BOT ###
 try:
     bot.run(cfg.login[0], cfg.login[1]) # the email and password are from "settings.py"

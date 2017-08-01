@@ -19,7 +19,7 @@ colors = {
     # 'random': ________ reserved
 }
 embed_color = colors.get('black') # initial embed color
-about_message = 'Selfbot \"Companion\"\nBy: lovesan\nVersion 0.1'
+about_message = 'Selfbot \"Companion\"\nBy: lovesan\nVersion 0.4'
 help_message = {
     'e <message>': 'Embed text with embed color.',
     'ec <[-n <new_color_name> <new_color_hex>]|<color_name>>': 'Change the color to embed text with.',
