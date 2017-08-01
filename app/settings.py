@@ -1,11 +1,11 @@
 ### INFO ###
-# in bot files, this file is known as cfg ('import settings as cfg')
+# in bot files, this file is known as cfg ("import settings as cfg")
 
 ### SETTINGS YOU SHOULD ALTER ###
-login = ['', '']
-prefix = ';'
+login = ['lukemister777@mail.com', 'DiScOrD!@#$(4545?>)']
+prefix = ';' # Examples: / or ! etc.
 
-BOT_DEBUG = True # disable for performance; enable for more logging
+BOT_DEBUG = True # disable for performance; enable for bot logging
 DISCORD_LOGGING = False # enable to create a file called 'discord.log' and fill it with lots of things about what's happening in Discord
 
 ### DOES NOT NEED CHANGE, BUT YOU CAN ###
@@ -16,6 +16,7 @@ colors = {
     'blue': 0x0000FF,   # resuired: calculations
     'green': 0x00FF00,  # required: successful operations
     'yellow': 0xFFFF00  # required: warnings
+    # 'random': ________ reserved
 }
 embed_color = colors.get('black') # initial embed color
 about_message = 'Selfbot \"Companion\"\nBy: lovesan\nVersion 0.1'
