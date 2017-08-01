@@ -59,7 +59,9 @@ async def on_message(message):
                 await commands.doeval(bot, message, marg)
 
             else: # we don't know what they mean in their command
-                pass # TODO: add usage
+                em = discord.Embed(title='Unknown call \"%s\"'%call, description='Check the terminal for usage information.', colour=cfg.colors.get('yellow'))
+                await bot.send_message(message.channel, embed=em)
+                await commands._help(bot, message, 'nomessage')
             return
 ### START BOT ###
 try:

@@ -11,7 +11,7 @@ import asyncio.coroutines
 # temporary settings (e.g. when random colors are enabled, it's not persistent)
 use_random_colors = False
 use_auto_embeds = False # this is set in "commands.py" but used in "bot.py"
-colors_backup = cfg.colors # used for resetting user colors
+colors_backup = cfg.colors.copy() # used for resetting user colors
 py_environment = None
 
 ### UTILS ###
@@ -25,9 +25,10 @@ def _embed(title, message, color):
 
 ### COMMANDS ###
 async def _help(bot, message, arg=None): # '_help' bc 'help' is already a python command
-    em = _embed('Help', 'Check the terminal.', cfg.colors.get('white'))
-    await bot.send_message(message.channel, embed=em)
-    if arg == None: # no specific command help
+    if not arg == 'nomessage': # used by "bot.py" for usage
+        em = _embed('Help', 'Check the terminal.', cfg.colors.get('white'))
+        await bot.send_message(message.channel, embed=em)
+    if arg == None or arg == 'nomessage': # no specific command help
         print('### HELP ###')
         for line in cfg.help_message:
             print('%s%s\t(%s)'%(cfg.prefix, line, cfg.help_message.get(line)))
@@ -70,22 +71,22 @@ async def embedsetcolor(bot, message, carg): # set embed color
                 await bot.send_message(message.channel, embed=em)
                 return
             except:
-                em = _embed('Error', 'Could not update color \"%s\" to %s.\n\nUsage `ec -n <new color name> <new color hex>`\nExample: `ec -n purple 0x9900FF`'%(new_color_name, new_color_hex), cfg.colors.get('red'))
+                em = _embed('Error', 'Could not update color \"%s\" to %s.\n\nUsage `ec -n <new color name> <new color hex>`.\nExample: `ec -n purple 0x9900FF`.'%(new_color_name, new_color_hex), cfg.colors.get('red'))
                 await bot.send_message(message.channel, embed=em)
                 return
     if carg[0] == '-r': # reset colors
-        # ;ec -r
         if not len(carg) == 1:
-            em = _embed('Error', 'Incorrect syntax.\n\nUsage: `ec -r`', cfg.colors.get('red'))
+            em = _embed('Error', 'Incorrect syntax.\n\nUsage: `ec -r`.', cfg.colors.get('red'))
             await bot.send_message(message.channel, embed=em)
             return
         try:
             cfg.colors = colors_backup
+            print(colors_backup)
             em = _embed('Success', 'Reset colors to default.', cfg.colors.get('green'))
             await bot.send_message(message.channel, embed=em)
             return
         except:
-            em = _embed('Error', 'Incorrect syntax.\n\nUsage: `ec -r`', cfg.colors.get('red'))
+            em = _embed('Error', 'Incorrect syntax.\n\nUsage: `ec -r`.', cfg.colors.get('red'))
             await bot.send_message(message.channel, embed=em)
             return
     if carg[0] == 'random': # random colors
@@ -96,7 +97,7 @@ async def embedsetcolor(bot, message, carg): # set embed color
     color = carg[0]
     try:
         cfg.embed_color = cfg.colors.get(color)
-        em = _embed('Success', 'Assigned embed color to %s'%(hex(cfg.embed_color)), cfg.embed_color)
+        em = _embed('Success', 'Assigned embed color to %s.'%hex(cfg.embed_color), cfg.embed_color)
         await bot.send_message(message.channel, embed=em)
     except:
         em = _embed('Error', 'Could not find color \"%s\".\n\n`help ec` will list available colors.'%(color), cfg.colors.get('red'))
@@ -119,7 +120,7 @@ async def executeshell(bot, message, marg):
             await bot.send_message(message.channel, embed=em)
             return
         except:
-            em = _embed(marg, 'Could not obtain command output. Possibly too long to send over Discord. Attempting to display in terminal instead.', cfg.colors.get('red'))
+            em = _embed(marg, 'Could not obtain command output. Possibly too long to send over Discord. Attempting to display in terminal instead.', cfg.colors.get('white'))
             await bot.send_message(message.channel, embed=em)
             return
     msg = ''
