@@ -5,12 +5,12 @@ These are executed by "bot.py" in their callings, with the proper arguments for 
 
 # imports
 import discord, subprocess as sub, asyncio, random, os, time, socket
+from sys import stdout
 from app import settings as cfg
 import asyncio.coroutines
 
 # temporary settings (e.g. when random colors are enabled, it's not persistent)
 use_random_colors = False
-use_auto_embeds = False # this is set in "commands.py" but used in "bot.py"
 colors_backup = cfg.colors.copy() # used for resetting user colors
 py_environment = None
 
@@ -29,10 +29,14 @@ async def _help(bot, message, arg=None): # '_help' bc 'help' is already a python
         em = _embed('Help', 'Check the terminal.', cfg.colors.get('white'))
         await bot.send_message(message.channel, embed=em)
     if arg == None or arg == 'nomessage': # no specific command help
-        print('### HELP ###')
-        for line in cfg.help_message:
-            print('%s%s\t(%s)'%(cfg.prefix, line, cfg.help_message.get(line)))
-        print('### HELP ###')
+        print('\nHelp\nUsage:')
+
+        # print all commands (usage)
+        for usage in cfg.help_message:
+            print('\t%s%s' % (cfg.prefix, usage))
+            for options in cfg.help_message.get(usage):#()
+                stdout.flush()
+                print('\t\t%s' % options)
     else:
         em = _embed('Error','Unknown command to request help for.',cfg.colors.get('red'))
         await bot.send_message(message.channel, embed=em)
@@ -112,8 +116,6 @@ async def executeshell(bot, message, marg):
         child = sub.Popen(marg, stdout=sub.PIPE)
         lines = child.communicate()
         returnCode = child.returncode
-        if cfg.BOT_DEBUG:
-            print('[!]Attempting shell command \"%s\":\n |-Message: \"%s\"\n |-Return code: %d.'%(marg, lines, returnCode))
     except:
         try:
             em = _embed(marg, str(lines).strip(), cfg.colors.get('red'))
@@ -143,15 +145,14 @@ async def executeshell(bot, message, marg):
         return
 
 async def doeval(bot, message, marg):
-    global py_environment
-    py_environment = sub.Popen('python', stdout=sub.PIPE, stdin=sub.PIPE, stderr=sub.PIPE) # create env
-    result = py_environment.communicate(input='print(\'test\')')[0]
-    print(result)
+    result = eval(marg)
 
-    em = _embed('Eval', result, cfg.colors.get('blue'))
+    em = None
+    if len(marg) < 15: # pretty printing
+        em = _embed(marg, result, cfg.colors.get('blue'))
+    else:
+        em = _embed('Evaluated Python', result, cfg.colors.get('blue'))
     await bot.send_message(message.channel, embed=em)
-
-    py_environment.kill()
 
 ### COMMANDS / NETWORKING ###
 async def ping(bot, message, carg=None):

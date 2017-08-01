@@ -25,10 +25,16 @@ bot = discord.Client()
 async def on_ready():
     print('[+] Logged in as %s\n[+] With ID: %s' %(bot.user.name,bot.user.id))
 
+last_message_sent = None
+last_python_program = None
+
 ### HANDLE BOT COMMANDS ###
 @bot.event
 async def on_message(message):
+    global bot
     if message.author == bot.user:
+        global last_message_sent
+        global last_python_program
         if message.content.startswith(cfg.prefix):
             # let's say we had a command: ;ping -v www.google.com
             call = message.content[1::1].split()[0] # command name                  ("ping")
@@ -56,17 +62,46 @@ async def on_message(message):
             elif call == 'sh': # execute and embed a shell script's output
                 await commands.executeshell(bot, message, marg)
             elif call == 'eval' or call == 'ev':
-                await commands.doeval(bot, message, marg)
+                if (len(marg) + len(call)) > len(call):         # ;eval 256 + 256
+                    await commands.doeval(bot, message, marg)
+                elif not last_python_program is None:           # (last message is used as python code) ;eval
+                    await commands.doeval(bot, message, last_python_program)
+                else:
+                    em = discord.Embed(title='Evaluate Python', description='Nothing to evaluate.\n' +\
+                    'You can create a python program with embedded code:\n```python\nprint(2 ** 8)\n```', colour=cfg.colors.get('red'))
+                    await bot.send_message(message.channel, embed=em)
 
             else: # we don't know what they mean in their command
                 em = discord.Embed(title='Unknown call \"%s\"'%call, description='Check the terminal for usage information.', colour=cfg.colors.get('yellow'))
                 await bot.send_message(message.channel, embed=em)
                 await commands._help(bot, message, 'nomessage')
             return
+
+        last_message_sent = message.content
+        # fix silly formatting in the last message sent (``` or ` etc.)
+        last_message_sent = str(last_message_sent).splitlines()
+        
+        # build the python program from the message (if there is one)
+        reading_python_lines = False
+        python_lines = []
+        for line in last_message_sent:
+            if str(line).startswith('```python'):
+                reading_python_lines = True
+            elif str(line).startswith('```'):
+                if reading_python_lines:
+                    break
+            else:
+                if reading_python_lines:
+                    python_lines.append(line)
+                else:
+                    break
+        if reading_python_lines:
+            last_python_program = str('\n'.join(python_lines))
+
 ### START BOT ###
 try:
     bot.run(cfg.login[0], cfg.login[1]) # the email and password are from "settings.py"
 except:
-    print('[!] Unable to connect to Discord. Ensure login information is correct, ' /
+    print('[!] Unable to connect to Discord. Ensure login information is correct, ' \
           'and you are connected to the internet.')
     exit(1)

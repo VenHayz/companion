@@ -5,7 +5,6 @@
 login = ['', '']
 prefix = ';' # Examples: / or ! etc.
 
-BOT_DEBUG = True # disable for performance; enable for bot logging
 DISCORD_LOGGING = False # enable to create a file called 'discord.log' and fill it with lots of things about what's happening in Discord
 
 ### DOES NOT NEED CHANGE, BUT YOU CAN ###
@@ -21,9 +20,10 @@ colors = {
 embed_color = colors.get('black') # initial embed color
 about_message = 'Selfbot \"Companion\"\nBy: lovesan\nVersion 0.4'
 help_message = {
-    'e <message>': 'Embed text with embed color.',
-    'ec <[-n <new_color_name> <new_color_hex>]|<color_name>>': 'Change the color to embed text with.',
-    'ping [-v] [hostname [times to ping]]': 'Test the networking speed of the bot.',
-    'sh <command>': 'Run a shell command and embed the output.'
+    'e': [{'<message>', 'Embed a message with embed color.'}],
+    'ec': [{'-r', 'Reset colors to default.'}, {'random', 'Use random colors for embeds.'}, {'-n <new color name> <new color hex>', 'Create a new color.'}, {'<color name>', 'Change the color to embed text with.'}],
+    'ping': [{'[-v]': 'More information.'}, {'<hostname> [times to ping]': 'Ping a specific host.'}],
+    'sh': [{'<command>': 'Run a shell command and embed the output.'}],
+    'ev | eval': [{'<python>': 'Evaluate Python code and embed output.'}, {'': 'Evalute last Python program.'}]
 }
 default_ping_hostname = 'www.google.com'
