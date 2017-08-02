@@ -117,6 +117,6 @@ async def on_message(message):
 try:
     bot.run(cfg.login[0], cfg.login[1]) # the email and password are from "settings.py"
 except:
-    print('[!] Unable to connect to Discord. Ensure login information is correct, ' \
+    print('[X] Unable to connect to Discord. Ensure login information is correct (app/settings.py), ' \
           'and you are connected to the internet.')
     exit(1)

@@ -4,7 +4,9 @@
 ## Dependencies
 You will need to download and install Python.
 ### For Windows
-I have created a file called [run.bat](https://github.com/lovesanxx/companion/blob/master/run.bat) and it downloads and installs any missing dependencies, then runs the bot. Use that instead, as it keeps your bot always updated.
+I have created a file called [install.bat](https://github.com/lovesanxx/companion/blob/master/install.bat) and it downloads and installs any missing dependencies, then runs the bot. Use that instead, as it keeps your bot always updated.
+
+_After running the __install.bat__, it becomes more convenient to use __run.bat__._
 ### Otherwise
 It's simple. Open a terminal anywhere, type the following command in, and hit enter:
 
