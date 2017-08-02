@@ -2,7 +2,7 @@
 # in bot files, this file is known as cfg ("import settings as cfg")
 
 ### SETTINGS YOU SHOULD ALTER ###
-login = ['lukemister777@mail.com', 'DiScOrD!@#$(4545?>)'] # don't forget to remove your account login when pushing to GitHub
+login = ['', ''] # don't forget to remove your account login when pushing to GitHub
 prefix = ';' # Examples: / or ! etc.
 
 DISCORD_LOGGING = False # enable to create a file called 'discord.log' and fill it with lots of things about what's happening in Discord
