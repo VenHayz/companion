@@ -27,21 +27,28 @@ async def on_ready():
 
 last_message_sent = None
 last_python_program = None
+open_bot_user_requests = {}          # unverified users making requests are pushed here (user: command)
 
 ### HANDLE BOT COMMANDS ###
 @bot.event
 async def on_message(message):
     global bot
-    if message.author == bot.user:
+    if message.author == bot.user or commands.enable_open_bot:
         global last_message_sent
         global last_python_program
+        global open_bot_user_requests
         if message.content.startswith(cfg.prefix):
+            if commands.enable_open_bot and message.author != bot.user \
+            and not cfg.verified_users.__contains__(message.author):
+                print('User ({}) is attempting to access open bot from {} in channel {}. Verify them with ;verify.'.format(message.author, message.server, message.channel))
+                open_bot_user_requests = open_bot_user_requests + {message.author.name: message.content}
             # let's say we had a command: ;ping -v www.google.com
             call = message.content[1::1].split()[0] # command name                  ("ping")
             carg = message.content[1::1].split()[1::1] # seperate arguments         ("-v", "www.google.com")
             marg = message.content[len(call)+2::1] # arguments as whole message     ("-v www.google.com")
 
-            await bot.delete_message(message)
+            if not commands.enable_open_bot or message.author == bot.user:
+                await bot.delete_message(message)
 
             if call == 'help': # request help info
                 if len(carg) > 0:
@@ -70,6 +77,20 @@ async def on_message(message):
                     em = discord.Embed(title='Evaluate Python', description='Nothing to evaluate.\n' +\
                     'You can create a python program with embedded code:\n```python\nprint(2 ** 8)\n```', colour=cfg.colors.get('red'))
                     await bot.send_message(message.channel, embed=em)
+            # for open bot related commands
+            elif call == 'open':
+                await commands.open_bot(bot, message, True)
+            elif call == 'close':
+                await commands.open_bot(bot, message, False)
+            elif call == 'verify':
+                if cfg.accept_once and message.author == bot.user:
+                    cfg.verified_users.append(open_bot_user_requests[len(open_bot_user_requests) - 1])
+                    print('User {} has been verified and added to list of verified users. (Use ;verified to see who\'s verified.)')
+                else:
+                    pass
+            elif call == 'verified':
+                em = discord.Embed(title='Verified Users', description=cfg.verified_users, colour=cfg.colors.get('white'))
+                await bot.send_message(message.channel, embed=em)
 
             else: # we don't know what they mean in their command
                 em = discord.Embed(title='Unknown call \"%s\"'%call, description='Check the terminal for usage information.', colour=cfg.colors.get('yellow'))

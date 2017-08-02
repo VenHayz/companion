@@ -15,6 +15,9 @@ use_random_colors = False
 colors_backup = cfg.colors.copy() # used for resetting user colors
 py_environment = None
 
+# open bot
+enable_open_bot = False # if True, then the bot can be used by anyone
+
 ### UTILS ###
 def _embed(title, message, color):
     """
@@ -22,6 +25,8 @@ def _embed(title, message, color):
     """
     if title == '':
         return discord.Embed(description=message, colour=color)
+    elif message == '':
+        return discord.Embed(title=title, colour=color)
     return discord.Embed(title=title, description=message, colour=color)
 
 ### COMMANDS ###
@@ -44,6 +49,17 @@ async def _help(bot, message, arg=None): # '_help' bc 'help' is already a python
 
 async def about(bot, message): # request about info
     em = _embed('About',cfg.about_message,cfg.colors.get('white'))
+    await bot.send_message(message.channel, embed=em)
+
+async def open_bot(bot, message, toggle):
+    global enable_open_bot
+    em = None
+    if toggle is True:
+        enable_open_bot = True
+        em = _embed('Opened Bot', '', cfg.colors.get('red'))
+    else:
+        enable_open_bot = False
+        em = _embed('Closed Bot', '', cfg.colors.get('green'))
     await bot.send_message(message.channel, embed=em)
 
 ### COMMANDS / EMBED ###
