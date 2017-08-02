@@ -4,8 +4,9 @@ These are executed by "bot.py" in their callings, with the proper arguments for 
 """
 
 # imports
-import discord, subprocess as sub, asyncio, random, os, time, socket
+import discord, subprocess as sub, asyncio, random, os, time, socket, io, textwrap, traceback
 from sys import stdout
+from contextlib import redirect_stdout
 from app import settings as cfg
 import asyncio.coroutines
 
@@ -145,14 +146,44 @@ async def executeshell(bot, message, marg):
         return
 
 async def doeval(bot, message, marg):
-    result = eval(marg)
+    #result = eval(marg)
 
-    em = None
-    if len(marg) < 15: # pretty printing
-        em = _embed(marg, result, cfg.colors.get('blue'))
+    env = {
+        'bot': bot,
+        'message': message,
+        'server': message.server
+    }
+
+    env.update(globals())
+
+    stdout = io.StringIO()
+
+    final = 'async def main_func_for_eval():\n%s' % textwrap.indent(marg, '  ')
+    
+    try:
+        exec(final, env)
+    except SyntaxError as e: # parsing errors are caught here
+        em = _embed('Syntax Error', e.msg, cfg.colors.get('red'))
+        await bot.send_message(message.channel, embed=em)
+
+    func = env['main_func_for_eval']
+    try:
+        with redirect_stdout(stdout):
+            ret = await func() # this is where the evaluation really happens
+    except Exception as e: # actual problems at runtime handled here
+        value = stdout.getvalue()
+        em = _embed('Error', '```py\n{}{}\n```'\
+        .format(value, traceback.format_exc()), cfg.colors.get('red'))
+        await bot.send_message(message.channel, embed=em)
     else:
-        em = _embed('Evaluated Python', result, cfg.colors.get('blue'))
-    await bot.send_message(message.channel, embed=em)
+        value = stdout.getvalue()
+        if ret is None:
+            if value:
+                em = _embed('Evaluated Python',\
+                '{}'.format(value), cfg.colors.get('blue'))
+                await bot.send_message(message.channel, embed=em)
+        else:
+            print('something is wrong...')
 
 ### COMMANDS / NETWORKING ###
 async def ping(bot, message, carg=None):

@@ -78,25 +78,10 @@ async def on_message(message):
             return
 
         last_message_sent = message.content
-        # fix silly formatting in the last message sent (``` or ` etc.)
-        last_message_sent = str(last_message_sent).splitlines()
         
         # build the python program from the message (if there is one)
-        reading_python_lines = False
-        python_lines = []
-        for line in last_message_sent:
-            if str(line).startswith('```python'):
-                reading_python_lines = True
-            elif str(line).startswith('```'):
-                if reading_python_lines:
-                    break
-            else:
-                if reading_python_lines:
-                    python_lines.append(line)
-                else:
-                    break
-        if reading_python_lines:
-            last_python_program = str('\n'.join(python_lines))
+        if str(last_message_sent).startswith('```python') or str(last_message_sent).startswith('```py'):
+            last_python_program = '\n'.join(str(last_message_sent).split('\n')[1:-1])
 
 ### START BOT ###
 try:
